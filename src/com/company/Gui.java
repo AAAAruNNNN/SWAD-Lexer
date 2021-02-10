@@ -39,7 +39,8 @@ public class Gui extends JFrame {
                 Lexer lexer = new Lexer(s);
                 lexer.run();
                 Vector<Token> tokens = lexer.getTokens();
-                writeTokenTable(tokens);
+                writeLexicalAnalysis(tokens);
+                writeConsole(tokens);
             }
         };
 
@@ -86,6 +87,11 @@ public class Gui extends JFrame {
         tokensTable = new JTable(tableModel);
     }
 
+    private void writeLexicalAnalysis(Vector<Token> tokens) {
+        writeTokenTable(tokens);
+        writeConsole(tokens);
+    }
+
     private void writeTokenTable(Vector<Token> tokens) {
         Object[] tokenData;
         clearTokenTable(tableModel);
@@ -97,14 +103,10 @@ public class Gui extends JFrame {
 
     private void clearTokenTable(DefaultTableModel tableModel) {
         if(tableModel.getRowCount()>0) {
-            System.out.println("Non empty. Clearing rows now!");
             for (int i = tableModel.getRowCount() - 1; i > -1; i--) {
                 tableModel.removeRow(i);
             }
-        } else {
-            System.out.println("empty. So no clearing");
         }
-
     }
 
     private void createConsole() {
@@ -115,7 +117,29 @@ public class Gui extends JFrame {
         mainFrame.add(console);
     }
 
+    private void writeConsole(Vector<Token> tokens) {
+        int numberOfStrings = tokens.size();
+        int numberOfLines = tokens.lastElement().getLine();
+        int numberOfErrors = getNumberOfErrors(tokens);
+        String plural = "";
+        if(numberOfErrors==1) {
+            plural = " does";
+        } else {
+            plural = "s do";
+        }
+        console.setText(numberOfStrings+" strings found in "+numberOfLines+" lines.\n"+
+                numberOfErrors+" string"+plural+" not match any rule");
+    }
 
+    private int getNumberOfErrors(Vector<Token> tokens) {
+        int numberOfErrors = 0;
+        for(Token token : tokens) {
+            if(token.getToken().equals("ERROR")) {
+                numberOfErrors++;
+            }
+        }
+        return numberOfErrors;
+    }
 
     public static void main(String[] args) {
         Gui gui = new Gui();
