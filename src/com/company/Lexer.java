@@ -44,7 +44,7 @@ public class Lexer {
 
     public void run() {
         splitLines(inputText);
-        printConsole();
+//        printConsole();
     }
 
     public String splitLines(String editorText){
@@ -62,7 +62,7 @@ public class Lexer {
 
     private void splitWords(String text, int lineNumber) {
         String[] wordsArray = text.split(" ");
-        System.out.println(Arrays.toString(wordsArray));
+//        System.out.println(Arrays.toString(wordsArray));
         for (String s : wordsArray)
             createToken(s, lineNumber);
     }
@@ -184,11 +184,11 @@ public class Lexer {
         return tokens;
     }
 
-    public void printConsole(){
-        for(Token token: tokens){
-            System.out.println("-----"+token.getLine() + " " + token.getToken()+" " + token.getWord()+"-----");
-        }
-    }
+//    public void printConsole(){
+//        for(Token token: tokens){
+//            System.out.println("-----"+token.getLine() + " " + token.getToken()+" " + token.getWord()+"-----");
+//        }
+//    }
 
 }
 

@@ -25,6 +25,10 @@ public class Gui extends JFrame {
     private DefaultTableModel tableModel;
 
 
+    public Gui() {
+        createGui();
+    }
+
     private void createMenu() {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
@@ -38,6 +42,7 @@ public class Gui extends JFrame {
                 writeTokenTable(tokens);
             }
         };
+
         JToggleButton runMenu = new JToggleButton(runAction);
         menuBar.add(fileMenu);
         menuBar.add(runMenu);
@@ -81,18 +86,26 @@ public class Gui extends JFrame {
         tokensTable = new JTable(tableModel);
     }
 
-    public void addTokenTable(Object[] obList) {
-        tableModel.addRow(obList);
-    }
-
     private void writeTokenTable(Vector<Token> tokens) {
         Object[] tokenData;
+        clearTokenTable(tableModel);
         for(Token token: tokens) {
             tokenData = new Object[]{token.getLine(), token.getToken(), token.getWord()};
             tableModel.addRow(tokenData);
         }
     }
 
+    private void clearTokenTable(DefaultTableModel tableModel) {
+        if(tableModel.getRowCount()>0) {
+            System.out.println("Non empty. Clearing rows now!");
+            for (int i = tableModel.getRowCount() - 1; i > -1; i--) {
+                tableModel.removeRow(i);
+            }
+        } else {
+            System.out.println("empty. So no clearing");
+        }
+
+    }
 
     private void createConsole() {
         console = new JTextArea();
@@ -102,12 +115,9 @@ public class Gui extends JFrame {
         mainFrame.add(console);
     }
 
-    public Gui() {
-        createGui();
-    }
+
 
     public static void main(String[] args) {
         Gui gui = new Gui();
-
     }
 }
