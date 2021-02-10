@@ -33,13 +33,8 @@ public class Gui extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String s = editorTextArea.getText();
                 Lexer lexer = new Lexer(s);
-                lexer.run(s);
+                lexer.run();
                 Vector<Token> tokens = lexer.getTokens();
-                System.out.println(tokens.isEmpty());
-                for(Token token: tokens){
-                    System.out.println("inside");
-                    System.out.println("-----"+token.getLine() + " " + token.getToken()+" " + token.getWord()+"-----");
-                }
                 writeTokenTable(tokens);
             }
         };
@@ -73,8 +68,6 @@ public class Gui extends JFrame {
         mainFrame.add(middlePanel);
     }
 
-
-
     private void createEditor() {
         editorTextArea = new JTextArea();
         editorTextArea.setLineWrap(true);
@@ -95,7 +88,6 @@ public class Gui extends JFrame {
     private void writeTokenTable(Vector<Token> tokens) {
         Object[] tokenData;
         for(Token token: tokens) {
-            System.out.println(token.getLine()+ token.getToken()+token.getWord());
             tokenData = new Object[]{token.getLine(), token.getToken(), token.getWord()};
             tableModel.addRow(tokenData);
         }

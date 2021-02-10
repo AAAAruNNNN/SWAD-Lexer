@@ -30,21 +30,21 @@ public class Lexer {
     final String[] operators = { "+", "-", "*", "/", "%", "++", "--", "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=",
             "^=", ">>=", "<<=", "==", "!=", ">", "<", ">=", "<=", "&&", "||", "!" };
 
-    Vector<Token> tokens;
+    static Vector<Token> tokens;
+    String inputText;
 
 
     /**
      * Lexer class constructor
      */
     Lexer(String inputText) {
-        String str = inputText;
+        this.inputText = inputText;
         tokens = new Vector<Token>();
     }
 
-    public void run(String s) {
-        Lexer lexer = new Lexer(s);
-        lexer.splitLines(s);
-        lexer.printConsole();
+    public void run() {
+        splitLines(inputText);
+        printConsole();
     }
 
     public String splitLines(String editorText){
@@ -185,11 +185,8 @@ public class Lexer {
     }
 
     public void printConsole(){
-        Gui gui = new Gui();
         for(Token token: tokens){
             System.out.println("-----"+token.getLine() + " " + token.getToken()+" " + token.getWord()+"-----");
-            Object[] row = new Object[]{token.getLine(), token.getToken(), token.getWord()};
-            gui.addTokenTable(row);
         }
     }
 
