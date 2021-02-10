@@ -24,7 +24,6 @@ public class Gui extends JFrame {
     private JTextArea console;
     private DefaultTableModel tableModel;
 
-
     public Gui() {
         createGui();
     }
