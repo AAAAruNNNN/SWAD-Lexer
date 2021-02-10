@@ -36,30 +36,19 @@ public class Lexer {
     /**
      * Lexer class constructor
      */
-    Lexer() {
+    Lexer(String inputText) {
+        String str = inputText;
         tokens = new Vector<Token>();
     }
 
-    public static void main(String[] args) throws Exception {
-        Lexer lexer = new Lexer();
-
-                String str = "if() {\n"
-                + "while() {\n"
-                + "default\n"
-                        + "variable = \"0B1110001\"\n"
-                        + "variable = 's'\n"
-                        + "$xx = 2.534\n"
-                            + "variable = 0xff23\n"
-                + "}\n"
-                + "}";
-                System.out.println(str);
-        lexer.splitLines(str);
+    public void run(String s) {
+        Lexer lexer = new Lexer(s);
+        lexer.splitLines(s);
         lexer.printConsole();
     }
 
     public String splitLines(String editorText){
         Scanner scanner = new Scanner(editorText);
-        String str;
         String text = "";
         int lineNumber = 1;
         while (scanner.hasNextLine()) {
@@ -191,13 +180,16 @@ public class Lexer {
         return true;
     }
 
-    private Vector<Token> getTokens(){
+    public Vector<Token> getTokens(){
         return tokens;
     }
 
-    private void printConsole(){
+    public void printConsole(){
+        Gui gui = new Gui();
         for(Token token: tokens){
-            System.out.println(token.getLine() + " " + token.getToken()+" " + token.getWord());
+            System.out.println("-----"+token.getLine() + " " + token.getToken()+" " + token.getWord()+"-----");
+            Object[] row = new Object[]{token.getLine(), token.getToken(), token.getWord()};
+            gui.addTokenTable(row);
         }
     }
 
