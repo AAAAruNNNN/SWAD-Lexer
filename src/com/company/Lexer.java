@@ -3,7 +3,7 @@ package com.company;
 import java.util.Arrays;
 import java.util.Vector;
 import java.util.Scanner;
-
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Performs lexical analysis on the input text and outputs the translated text
@@ -13,163 +13,140 @@ import java.util.Scanner;
  * @author Chandrasekhara Bharathi Narasimhan (ASU ID: 1217504873)
  */
 public class Lexer {
-    private static final String HEXADECIMAL_PATTERN = "0[xX][0-9a-fA-F]+"; //"(?:0[xX])?[0-9a-fA-F]+";///(0x)?[0-9a-f]+/i
+    private static final String HEXADECIMAL_PATTERN = "0[xX][0-9a-fA-F]+"; // "(?:0[xX])?[0-9a-fA-F]+";///(0x)?[0-9a-f]+/i
     private static final String INT_PATTERN = "\\d+";
-    private static final String FLOAT_PATTERN = "[+-]?((\\d+\\.?\\d*)|(\\.\\d+))" ;
-    private static final String OCTAL_PATTERN = "^0[1-7][0-7]*$";//"[0-7]*$"
-    private static final String BINARY_PATTERN = "0[bB][0-1]+";//"(?:0[bB])?[0-1]+";
+    private static final String FLOAT_PATTERN = "[+-]?((\\d+\\.?\\d*)|(\\.\\d+))";
+    private static final String OCTAL_PATTERN = "^0[1-7][0-7]*$";// "[0-7]*$"
+    private static final String BINARY_PATTERN = "0[bB][0-1]+";// "(?:0[bB])?[0-1]+";
     private static final String STRING_PATTERN = "\"[0-9a-zA-Z]+\"";
     private static final String CHARACTER_PATTERN = "\'.\'";
+    private static final String IDENTIFIER_PATTERN = "[_a-zA-Z][_a-zA-Z0-9]*";//"(?:_)?[_][a-zA-Z]+";
 
-    final String[] delimiters = {"(", ")", "{", "}", ";", ","};
-    final String[] keyWords = {"abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class",
+    private static final String[] DELIMITERS = { "(", ")", "{", "}", ";", "," };
+    private static final String[] KEYWORDS = { "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class",
             "const", "continue", "default", "do", "double", "else", "enum", "extends", "final", "finally", "float",
             "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long", "native", "new",
             "package", "private", "protected", "public", "return", "short", "static", "strictfp", "super", "switch",
-            "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile", "while"};
-    final String[] operators = { "+", "-", "*", "/", "%", "++", "--", "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=",
+            "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile", "while" };
+    private static final String[] OPERATORS = { "+", "-", "*", "/", "%", "++", "--", "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=",
             "^=", ">>=", "<<=", "==", "!=", ">", "<", ">=", "<=", "&&", "||", "!" };
 
-    Vector<Token> tokens;
-
+    private Vector<Token> tokens;
+    private String inputText;
 
     /**
      * Lexer class constructor
      */
-    Lexer() {
+    Lexer(String inputText) {
+        this.inputText = inputText;
         tokens = new Vector<Token>();
     }
 
-    public static void main(String[] args) throws Exception {
-        Lexer lexer = new Lexer();
+    public void run(){
+        splitLines(inputText);
+    }
 
-                String str = "if(x>=y) {\n"
-                        +"tokenType = checkTokenType(word.\n" +
-                        "substring(start, end));\n"
-                + "while() {\n"
-                + "default\n"
-                        + "              variable = \"0B1110001\"\n"
-                        + "              variable = 's'\n"
-                        + "               $xx = 2.534\n"
-                        + "     x = 0b11abc\n"
-                            + "            int a=x;\n"
-                + "}\n"
-                + "}";
-                System.out.println(str);
+    public static void main(String[] args) throws Exception {
+
+        String str = "if(x>=y) {\n" + "tokenType = checkTokenType(word.\n" + "substring(start, end));\n" + "while() {\n"
+                + "default\n" + "              variable = \"0B1110001\"\n" + "              variable = 's'\n"
+                + "               $xx = 2.534\n" + "     x = 0b11abc\n" + "            a++;\n" + "}\n" + "$xx = _someT = __some = _seo4 = 4mm = _s$";
+        Lexer lexer = new Lexer(str);
+
         lexer.splitLines(str);
         lexer.printConsole();
     }
 
-    public String splitLines(String editorText){
+    private void splitLines(String editorText) {
         Scanner scanner = new Scanner(editorText);
-        String str;
-        String text = "";
-        int lineNumber = 1;
+        AtomicInteger lineNumber = new AtomicInteger(1);
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            splitWords(line.trim(), lineNumber++);
-            text = text + " " + line.trim();
+            splitWords(line.trim(), lineNumber.getAndIncrement());
         }
         scanner.close();
-        return text.trim();
     }
 
     private void splitWords(String text, int lineNumber) {
-        String[] wordsArray = text.split("\\s+");
-        System.out.println(Arrays.toString(wordsArray));
-        for (String s : wordsArray)
-            createToken(s, lineNumber);
-    }
-
-    public void createToken(String word, int lineNumber) {
-        int start = 0, end = word.length();
-        String tokenType = "";
-        Token token;
-        for (int i = 0; i < word.length(); i++) {
-            if (Arrays.asList(delimiters).contains(String.valueOf(word.charAt(i))) || Arrays.asList(operators).contains(String.valueOf(word.charAt(i))) || Arrays.asList(delimiters).contains(String.valueOf(word.charAt(start))) || Arrays.asList(operators).contains(String.valueOf(word.charAt(start)))) {
-                tokenType = checkTokenType(word.substring(start, i));
-                if (tokenType.equals(""))
-                    continue;
-                token = new Token(word.substring(start, i), tokenType, lineNumber);
-                concatOperator(tokens, token);
-//                    System.out.println("The Last Element: "+tokens.lastElement().getWord());
-                tokens.add(token);
+        int start = 0, end = text.length();
+        for (int i = 0; i < end; i++) {
+            if (String.valueOf(text.charAt(i)).equals(" ") || String.valueOf(text.charAt(start)).equals(" ")
+                    || Arrays.asList(DELIMITERS).contains(String.valueOf(text.charAt(i)))
+                    || Arrays.asList(OPERATORS).contains(String.valueOf(text.charAt(i)))
+                    || Arrays.asList(DELIMITERS).contains(String.valueOf(text.charAt(start)))
+                    || Arrays.asList(OPERATORS).contains(String.valueOf(text.charAt(start)))) {
+                String currentWord = text.substring(start, i);
+                if (!currentWord.equals(" ") && !currentWord.equals("")) {
+                    createToken(currentWord, lineNumber);
+                }
                 start = i;
             }
         }
-//            for(String s: delimiters){
-//                if(s.equals(String.valueOf(word.charAt(i))) || String.valueOf(word.charAt(i)).equals("=") || s.equals(String.valueOf(word.charAt(start))) || String.valueOf(word.charAt(start)).equals("=")){
-//                    tokenType = checkTokenType(word.substring(start, i));
-//                    if(tokenType.equals(""))
-//                        continue;
-//                    token = new Token(word.substring(start, i), tokenType, lineNumber);
-//                    tokens.add(token);
-//                    start = i;
-//                }
-//            }
-//        }
-        tokenType = checkTokenType(word.substring(start, end));
-        token = new Token(word.substring(start, end), tokenType, lineNumber);
-        tokens.add(token);
+        createToken(text.substring(start, end), lineNumber);
     }
 
-    private void concatOperator(Vector<Token> tokens, Token currentToken){
-        if(!currentToken.getToken().equals("OPERATOR"))
+    private void createToken(String word, int lineNumber) {
+        if (word.equals(" "))
             return;
-        if(tokens.size() > 0){
-            Token lastToken = tokens.lastElement();
-            if(lastToken.getToken().equals("OPERATOR") && lastToken.getLine() == currentToken.getLine()){
-                lastToken.setWord(lastToken.getWord() + currentToken.getWord());
+        Token token = new Token(word, checkTokenType(word), lineNumber);
+        addTokens(token);
+    }
+
+    private void addTokens(Token currentToken) {
+        if (currentToken.getToken().equals("OPERATOR")) {
+            if (tokens.size() > 0) {
+                Token lastToken = tokens.lastElement();
+                if (lastToken.getToken().equals("OPERATOR") && lastToken.getLine() == currentToken.getLine()) {
+                    lastToken.setWord(lastToken.getWord() + currentToken.getWord());
+                    return;
+                }
             }
         }
-
+        tokens.add(currentToken);
     }
-//            tokens.lastElement().setToken()
 
-
-
-    public String checkTokenType(String word){
-        if(word.equals(""))
+    public String checkTokenType(String word) {
+        if (word.equals(""))
             return "";
-        if(isKeyWord(word))
+        if (isKeyWord(word))
             return "KEYWORD";
-        if(isOperator(word))
+        if (isOperator(word))
             return "OPERATOR";
-        if(isDelimiter(word))
+        if (isDelimiter(word))
             return "DELIMITER";
-        if(isBinary(word))
+        if (isBinary(word))
             return "BINARY";
-        if(isOctal(word))
+        if (isOctal(word))
             return "OCTAL";
-        if(isInteger(word))
+        if (isInteger(word))
             return "INTEGER";
-        if(isFloat(word))
+        if (isFloat(word))
             return "FLOAT";
-        if(isHexadecimal(word))
+        if (isHexadecimal(word))
             return "HEXADECIMAL";
-        if(isString(word))
+        if (isString(word))
             return "STRING";
-        if(isCharacter(word))
+        if (isCharacter(word))
             return "CHARACTER";
-        if(isIdentifier(word))
+        if (isIdentifier(word))
             return "IDENTIFIER";
         return "ERROR";
     }
 
-    public boolean isKeyWord(String word){
-        if(Arrays.asList(keyWords).contains(word))
+    public boolean isKeyWord(String word) {
+        if (Arrays.asList(KEYWORDS).contains(word))
             return true;
         return false;
     }
 
-    public boolean isDelimiter(String word){
-        if(Arrays.asList(delimiters).contains(word))
+    public boolean isDelimiter(String word) {
+        if (Arrays.asList(DELIMITERS).contains(word))
             return true;
         return false;
     }
 
-    public boolean isOperator(String word){
-        if(Arrays.asList(operators).contains(word))
+    public boolean isOperator(String word) {
+        if (Arrays.asList(OPERATORS).contains(word))
             return true;
         return false;
     }
@@ -202,36 +179,18 @@ public class Lexer {
         return word.matches(CHARACTER_PATTERN);
     }
 
-    public boolean isIdentifier(String word){
-        if (!((word.charAt(0) >= 'a' && word.charAt(0) <= 'z')
-                || (word.charAt(0)>= 'A' && word.charAt(1) <= 'Z')
-                || word.charAt(0) == '_'))
-            return false;
-
-        for (int i = 1; i < word.length(); i++)
-        {
-            if (!((word.charAt(i) >= 'a' && word.charAt(i) <= 'z')
-                    || (word.charAt(i) >= 'A' && word.charAt(i) <= 'Z')
-                    || (word.charAt(i) >= '0' && word.charAt(i) <= '9')
-                    || word.charAt(i) == '_'))
-                return false;
-        }
-
-        return true;
+    private boolean isIdentifier(String word) {
+        return word.matches(IDENTIFIER_PATTERN);
     }
 
-    private Vector<Token> getTokens(){
+    private Vector<Token> getTokens() {
         return tokens;
     }
 
-    private void printConsole(){
-        for(Token token: tokens){
-            System.out.println(token.getLine() + " " + token.getToken()+" " + token.getWord());
+    private void printConsole() {
+        for (Token token : tokens) {
+            System.out.println(token.getLine() + " " + token.getToken() + " " + token.getWord());
         }
     }
 
 }
-
-
-
-
