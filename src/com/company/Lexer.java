@@ -36,7 +36,7 @@ public class Lexer {
     /**
      * Lexer class constructor
      */
-    Lexer(String inputText) {
+    public Lexer(String inputText) {
         this.inputText = inputText;
         tokens = new Vector<Token>();
     }
@@ -47,30 +47,36 @@ public class Lexer {
 
     private void splitLines(String editorText) {
         Scanner scanner = new Scanner(editorText);
-        AtomicInteger lineNumber = new AtomicInteger(1);
+        Vector<Line> lines = new Vector<>();
+        int lineNumber = 1;
         while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            splitWords(line.trim(), lineNumber.getAndIncrement());
+            String lineContent = scanner.nextLine();
+            lines.add(new Line(lineContent, lineNumber++));
         }
+        splitWords(lines);
         scanner.close();
     }
 
-    private void splitWords(String text, int lineNumber) {
-        int start = 0, end = text.length();
-        for (int i = 0; i < end; i++) {
-            if (String.valueOf(text.charAt(i)).equals(" ") || String.valueOf(text.charAt(start)).equals(" ")
-                    || Arrays.asList(DELIMITERS).contains(String.valueOf(text.charAt(i)))
-                    || Arrays.asList(OPERATORS).contains(String.valueOf(text.charAt(i)))
-                    || Arrays.asList(DELIMITERS).contains(String.valueOf(text.charAt(start)))
-                    || Arrays.asList(OPERATORS).contains(String.valueOf(text.charAt(start)))) {
-                String currentWord = text.substring(start, i);
-                if (!currentWord.equals(" ") && !currentWord.equals("")) {
-                    createToken(currentWord, lineNumber);
+    public void splitWords(Vector<Line> lines) {
+        for(Line line: lines) {
+            int startingIndex = 0;
+            String lineContent = line.lineContent;
+            for(int currentIndex = 0; currentIndex < line.lineContent.length(); currentIndex++) {
+                if (String.valueOf(lineContent.charAt(currentIndex)).equals(" ")
+                        || String.valueOf(lineContent.charAt(startingIndex)).equals(" ")
+                        || Arrays.asList(DELIMITERS).contains(String.valueOf(lineContent.charAt(currentIndex)))
+                        || Arrays.asList(OPERATORS).contains(String.valueOf(lineContent.charAt(currentIndex)))
+                        || Arrays.asList(DELIMITERS).contains(String.valueOf(lineContent.charAt(startingIndex)))
+                        || Arrays.asList(OPERATORS).contains(String.valueOf(lineContent.charAt(startingIndex)))) {
+                    String currentWord = lineContent.substring(startingIndex, currentIndex);
+                    if (!currentWord.equals(" ") && !currentWord.equals("")) {
+                        createToken(currentWord, line.lineNumber);
+                    }
+                    startingIndex = currentIndex;
                 }
-                start = i;
             }
+            createToken(lineContent.substring(startingIndex, line.lineContent.length()), line.lineNumber);
         }
-        createToken(text.substring(start, end), lineNumber);
     }
 
     private void createToken(String word, int lineNumber) {
@@ -174,6 +180,16 @@ public class Lexer {
 
     public Vector<Token> getTokens() {
         return tokens;
+    }
+
+    private class Line{
+        String lineContent;
+        int lineNumber;
+
+        public Line(String lineContent, int lineNumber) {
+            this.lineContent = lineContent;
+            this.lineNumber = lineNumber;
+        }
     }
 
 }
