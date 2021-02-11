@@ -19,7 +19,7 @@ import java.util.Vector;
 
 public class Gui extends JFrame {
     private JFrame mainFrame;
-    private JTextArea editorTextArea;
+    private JTextArea editor;
     private JTable tokensTable;
     private JTextArea console;
     private DefaultTableModel tableModel;
@@ -34,7 +34,7 @@ public class Gui extends JFrame {
         Action runAction = new AbstractAction("Run") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String s = editorTextArea.getText();
+                String s = editor.getText();
                 Lexer lexer = new Lexer(s);
                 lexer.run();
                 Vector<Token> tokens = lexer.getTokens();
@@ -65,19 +65,19 @@ public class Gui extends JFrame {
         JPanel middlePanel = new JPanel();
         middlePanel.setLayout(new GridLayout(1, 2));
         createEditor();
-        middlePanel.add(editorTextArea);
+        JScrollPane editorScrollPane = new JScrollPane(editor);
+        editorScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Source Code"));
+        middlePanel.add(editorScrollPane);
         createTokensTable();
-        JScrollPane scrollPane = new JScrollPane(tokensTable);
-        scrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Token Table"));
-        middlePanel.add(scrollPane);
+        JScrollPane tableScrollPane = new JScrollPane(tokensTable);
+        tableScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Token Table"));
+        middlePanel.add(tableScrollPane);
         mainFrame.add(middlePanel);
     }
 
     private void createEditor() {
-        editorTextArea = new JTextArea();
-        editorTextArea.setLineWrap(true);
-        editorTextArea.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Source Code"));
-
+        editor = new JTextArea();
+        editor.setLineWrap(true);
     }
 
     private void createTokensTable() {
@@ -118,16 +118,21 @@ public class Gui extends JFrame {
 
     private void writeConsole(Vector<Token> tokens) {
         int numberOfStrings = tokens.size();
-        int numberOfLines = tokens.lastElement().getLine();
-        int numberOfErrors = getNumberOfErrors(tokens);
-        String plural = "";
-        if(numberOfErrors==1) {
-            plural = " does";
+        if(numberOfStrings>0){
+            int numberOfLines = tokens.lastElement().getLine();
+            int numberOfErrors = getNumberOfErrors(tokens);
+            String plural;
+            if(numberOfErrors==1) {
+                plural = " does";
+            } else {
+                plural = "s do";
+            }
+            console.setText(numberOfStrings+" strings found in "+numberOfLines+" lines.\n"+
+                    numberOfErrors+" string"+plural+" not match any rule");
         } else {
-            plural = "s do";
+            console.setText("No input in editor");
         }
-        console.setText(numberOfStrings+" strings found in "+numberOfLines+" lines.\n"+
-                numberOfErrors+" string"+plural+" not match any rule");
+
     }
 
     private int getNumberOfErrors(Vector<Token> tokens) {
@@ -141,6 +146,6 @@ public class Gui extends JFrame {
     }
 
     public static void main(String[] args) {
-        Gui gui = new Gui();
+        new Gui();
     }
 }
