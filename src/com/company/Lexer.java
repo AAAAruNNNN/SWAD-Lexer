@@ -20,16 +20,17 @@ public class Lexer {
     private static final String BINARY_PATTERN = "0[bB][0-1]+";// "(?:0[bB])?[0-1]+";
     private static final String STRING_PATTERN = "\"[0-9a-zA-Z]+\"";
     private static final String CHARACTER_PATTERN = "\'.\'";
-    private static final String IDENTIFIER_PATTERN = "[_a-zA-Z][_a-zA-Z0-9]*";//"(?:_)?[_][a-zA-Z]+";
+    private static final String IDENTIFIER_PATTERN = "[_a-zA-Z][_a-zA-Z0-9]*";// "(?:_)?[_][a-zA-Z]+";
 
     private static final String[] DELIMITERS = { "(", ")", "{", "}", ";", "," };
-    private static final String[] KEYWORDS = { "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class",
-            "const", "continue", "default", "do", "double", "else", "enum", "extends", "final", "finally", "float",
-            "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long", "native", "new",
-            "package", "private", "protected", "public", "return", "short", "static", "strictfp", "super", "switch",
-            "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile", "while" };
-    private static final String[] OPERATORS = { "+", "-", "*", "/", "%", "++", "--", "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=",
-            "^=", ">>=", "<<=", "==", "!=", ">", "<", ">=", "<=", "&&", "||", "!" };
+    private static final String[] KEYWORDS = { "abstract", "assert", "boolean", "break", "byte", "case", "catch",
+            "char", "class", "const", "continue", "default", "do", "double", "else", "enum", "extends", "final",
+            "finally", "float", "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long",
+            "native", "new", "package", "private", "protected", "public", "return", "short", "static", "strictfp",
+            "super", "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile",
+            "while" };
+    private static final String[] OPERATORS = { "+", "-", "*", "/", "%", "++", "--", "=", "+=", "-=", "*=", "/=", "%=",
+            "&=", "|=", "^=", ">>=", "<<=", "==", "!=", ">", "<", ">=", "<=", "&&", "||", "!", "&", "|" };
 
     private Vector<Token> tokens;
     private String inputText;
@@ -42,19 +43,8 @@ public class Lexer {
         tokens = new Vector<Token>();
     }
 
-    public void run(){
+    public void run() {
         splitLines(inputText);
-    }
-
-    public static void main(String[] args) throws Exception {
-
-        String str = "if(x>=y) {\n" + "tokenType = checkTokenType(word.\n" + "substring(start, end));\n" + "while() {\n"
-                + "default\n" + "              variable = \"0B1110001\"\n" + "              variable = 's'\n"
-                + "               $xx = 2.534\n" + "     x = 0b11abc\n" + "            a++;\n" + "}\n" + "$xx = _someT = __some = _seo4 = 4mm = _s$";
-        Lexer lexer = new Lexer(str);
-
-        lexer.splitLines(str);
-        lexer.printConsole();
     }
 
     private void splitLines(String editorText) {
@@ -96,7 +86,8 @@ public class Lexer {
         if (currentToken.getToken().equals("OPERATOR")) {
             if (tokens.size() > 0) {
                 Token lastToken = tokens.lastElement();
-                if (lastToken.getToken().equals("OPERATOR") && lastToken.getLine() == currentToken.getLine()) {
+                if (lastToken.getToken().equals("OPERATOR") && lastToken.getLine() == currentToken.getLine()
+                        && lastToken.getWord().length() < 2) {
                     lastToken.setWord(lastToken.getWord() + currentToken.getWord());
                     return;
                 }
@@ -105,7 +96,7 @@ public class Lexer {
         tokens.add(currentToken);
     }
 
-    public String checkTokenType(String word) {
+    private String checkTokenType(String word) {
         if (word.equals(""))
             return "";
         if (isKeyWord(word))
@@ -133,19 +124,19 @@ public class Lexer {
         return "ERROR";
     }
 
-    public boolean isKeyWord(String word) {
+    private boolean isKeyWord(String word) {
         if (Arrays.asList(KEYWORDS).contains(word))
             return true;
         return false;
     }
 
-    public boolean isDelimiter(String word) {
+    private boolean isDelimiter(String word) {
         if (Arrays.asList(DELIMITERS).contains(word))
             return true;
         return false;
     }
 
-    public boolean isOperator(String word) {
+    private boolean isOperator(String word) {
         if (Arrays.asList(OPERATORS).contains(word))
             return true;
         return false;
@@ -185,12 +176,6 @@ public class Lexer {
 
     private Vector<Token> getTokens() {
         return tokens;
-    }
-
-    private void printConsole() {
-        for (Token token : tokens) {
-            System.out.println(token.getLine() + " " + token.getToken() + " " + token.getWord());
-        }
     }
 
 }
