@@ -26,8 +26,7 @@ public class Gui extends JFrame {
     private DefaultTableModel tableModel;
 
     private static final String FRAME_TITLE = "LEXICAL ANALYZER ";
-    private static final int FRAME_WIDTH = 500;
-    private static final int FRAME_HEIGHT = 500;
+    private static final int FRAME_DIMENSION = 500;
     private static final String FILE_MENU_LABEL = "File";
     private static final String RUN_MENU_LABEL = "Run";
     private static final String[] COLUMN_NAMES = {"Line", "Token", "String or word"};
@@ -42,7 +41,7 @@ public class Gui extends JFrame {
 
     private void createGui() {
         mainFrame = new JFrame(FRAME_TITLE);
-        mainFrame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        mainFrame.setSize(FRAME_DIMENSION, FRAME_DIMENSION);
         createMenu();
         createMiddlePanel();
         createConsole();
@@ -105,7 +104,7 @@ public class Gui extends JFrame {
         Object[] tokenData;
         clearTokenTable(tableModel);
         for (Token token : tokens) {
-            tokenData = new Object[]{token.getLine(), token.getToken(), token.getWord()};
+            tokenData = new Object[]{token.getLineNumber(), token.getToken(), token.getWord()};
             tableModel.addRow(tokenData);
         }
     }
@@ -130,7 +129,7 @@ public class Gui extends JFrame {
     private void writeConsole(Vector<Token> tokens) {
         int numberOfStrings = tokens.size();
         if (numberOfStrings > 0) {
-            int numberOfLines = tokens.lastElement().getLine();
+            int numberOfLines = tokens.lastElement().getLineNumber();
             int numberOfErrors = getNumberOfErrors(tokens);
             String plural;
             if (numberOfErrors == 1) {

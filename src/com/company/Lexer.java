@@ -1,9 +1,10 @@
 package com.company;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Performs lexical analysis on the input text and outputs the translated text
@@ -13,14 +14,28 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Chandrasekhara Bharathi Narasimhan (ASU ID: 1217504873)
  */
 public class Lexer {
-    private static final String HEXADECIMAL_PATTERN = "0[xX][0-9a-fA-F]+"; //"(?:0[xX])?[0-9a-fA-F]+";///(0x)?[0-9a-f]+/i
+    private static final String EMPTY_STRING = "";
+    private static final String EMPTY_SPACE = " ";
+    private static final String KEYWORD = "KEYWORD";
+    private static final String OPERATOR = "OPERATOR";
+    private static final String DELIMITER = "DELIMITER";
+    private static final String INTEGER = "INTEGER";
+    private static final String BINARY = "BINARY";
+    private static final String OCTAL = "OCTAL";
+    private static final String FLOAT = "FLOAT";
+    private static final String HEXADECIMAL = "HEXADECIMAL";
+    private static final String STRING = "STRING";
+    private static final String CHARACTER = "CHARACTER";
+    private static final String IDENTIFIER = "IDENTIFIER";
+    private static final String ERROR = "ERROR";
+    private static final String HEXADECIMAL_PATTERN = "0[xX][0-9a-fA-F]+";
     private static final String INT_PATTERN = "\\d+";
     private static final String FLOAT_PATTERN = "[+-]?((\\d+\\.?\\d*)|(\\.\\d+))";
-    private static final String OCTAL_PATTERN = "0[1-7][0-7]*";// "[0-7]$"
-    private static final String BINARY_PATTERN = "0[bB][0-1]+";// "(?:0[bB])?[0-1]+";
-    private static final String STRING_PATTERN = "\"[0-9a-zA-Z]+\"";
+    private static final String OCTAL_PATTERN = "0[1-7][0-7]*";
+    private static final String BINARY_PATTERN = "0[bB][0-1]+";
+    private static final String STRING_PATTERN = "\"[0-9a-zA-Z]*\"";
     private static final String CHARACTER_PATTERN = "\'.\'";
-    private static final String IDENTIFIER_PATTERN = "[a-zA-Z][_a-zA-Z0-9]*";// "(?:)?[_][a-zA-Z]+";
+    private static final String IDENTIFIER_PATTERN = "[a-zA-Z][_a-zA-Z0-9]*";
     private static final String[] DELIMITERS = { "(", ")", "{", "}", ";", ",", "." };
     private static final String[] KEYWORDS = { "abstract", "assert", "boolean", "break", "byte", "case", "catch",
             "char", "class", "const", "continue", "default", "do", "double", "else", "enum", "extends", "final",
@@ -28,8 +43,9 @@ public class Lexer {
             "native", "new", "package", "private", "protected", "public", "return", "short", "static", "strictfp",
             "super", "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile",
             "while" };
-    private static final String[] OPERATORS = { "+", "-", "", "/", "%", "++", "--", "=", "+=", "-=", "=", "/=", "%=",
+    private static final String[] OPERATORS = { "+", "-", "*", "/", "%", "++", "--", "=", "+=", "-=", "=", "/=", "%=",
             "&=", "|=", "^=", ">>=", "<<=", "==", "!=", ">", "<", ">=", "<=", "&&", "||", "!", "&", "|" };
+
     private Vector<Token> tokens;
     private String inputText;
 
@@ -42,55 +58,68 @@ public class Lexer {
     }
 
     public void run() {
-        splitLines(inputText);
+        Vector<IndexedString> linesFromInput = getLinesFromInput(inputText);
+        List<IndexedString> wordList = splitWords(linesFromInput);
+        getTokenFromWords(wordList);
     }
 
-    private void splitLines(String editorText) {
-        Scanner scanner = new Scanner(editorText);
-        Vector<Line> lines = new Vector<>();
+    private Vector<IndexedString> getLinesFromInput(String inputText) {
+        Scanner scanner = new Scanner(inputText);
+        Vector<IndexedString> lines = new Vector<>();
         int lineNumber = 1;
         while (scanner.hasNextLine()) {
-            String lineContent = scanner.nextLine();
-            lines.add(new Line(lineContent, lineNumber++));
+            String content = scanner.nextLine();
+            if(content.length()>0) {
+                lines.add(new IndexedString(content, lineNumber));
+            }
+            lineNumber++;
         }
-        splitWords(lines);
         scanner.close();
+        return lines;
     }
 
-    public void splitWords(Vector<Line> lines) {
-        for(Line line: lines) {
+    private List<IndexedString> splitWords(Vector<IndexedString> lines) {
+        List<IndexedString> wordList = new ArrayList<>();
+        for(IndexedString line : lines) {
             int startingIndex = 0;
-            String lineContent = line.lineContent;
-            for(int currentIndex = 0; currentIndex < line.lineContent.length(); currentIndex++) {
-                if (String.valueOf(lineContent.charAt(currentIndex)).equals(" ")
-                        || String.valueOf(lineContent.charAt(startingIndex)).equals(" ")
-                        || Arrays.asList(DELIMITERS).contains(String.valueOf(lineContent.charAt(currentIndex)))
-                        || Arrays.asList(OPERATORS).contains(String.valueOf(lineContent.charAt(currentIndex)))
-                        || Arrays.asList(DELIMITERS).contains(String.valueOf(lineContent.charAt(startingIndex)))
-                        || Arrays.asList(OPERATORS).contains(String.valueOf(lineContent.charAt(startingIndex)))) {
+            String lineContent = line.content;
+            for(int currentIndex = 0; currentIndex < line.content.length(); currentIndex++) {
+                if (substringFound(lineContent, currentIndex, startingIndex)) {
                     String currentWord = lineContent.substring(startingIndex, currentIndex);
-                    if (!currentWord.equals(" ") && !currentWord.equals("")) {
-                        createToken(currentWord, line.lineNumber);
+                    if (!currentWord.equals(EMPTY_SPACE) && !currentWord.equals(EMPTY_STRING)) {
+                        wordList.add(new IndexedString(currentWord, line.lineNumber));
                     }
                     startingIndex = currentIndex;
                 }
             }
-            createToken(lineContent.substring(startingIndex, line.lineContent.length()), line.lineNumber);
+            wordList.add(new IndexedString(lineContent.substring(startingIndex, line.content.length()), line.lineNumber));
+        }
+        return wordList;
+    }
+
+    private boolean substringFound(String lineContent, int currentIndex, int startingIndex) {
+        return (String.valueOf(lineContent.charAt(currentIndex)).equals(EMPTY_SPACE)
+                || String.valueOf(lineContent.charAt(startingIndex)).equals(EMPTY_SPACE)
+                || Arrays.asList(DELIMITERS).contains(String.valueOf(lineContent.charAt(currentIndex)))
+                || Arrays.asList(OPERATORS).contains(String.valueOf(lineContent.charAt(currentIndex)))
+                || Arrays.asList(DELIMITERS).contains(String.valueOf(lineContent.charAt(startingIndex)))
+                || Arrays.asList(OPERATORS).contains(String.valueOf(lineContent.charAt(startingIndex))));
+    }
+
+    private void getTokenFromWords(List<IndexedString> wordList) {
+        for(IndexedString word: wordList) {
+            if (!word.content.equals(EMPTY_SPACE)) {
+                Token token = new Token(word.content, getTokenType(word.content), word.lineNumber);
+                addToken(token);
+            }
         }
     }
 
-    private void createToken(String word, int lineNumber) {
-        if (word.equals(" "))
-            return;
-        Token token = new Token(word, checkTokenType(word), lineNumber);
-        addTokens(token);
-    }
-
-    private void addTokens(Token currentToken) {
-        if (currentToken.getToken().equals("OPERATOR")) {
+    private void addToken(Token currentToken) {
+        if (currentToken.getToken().equals(OPERATOR)) {
             if (tokens.size() > 0) {
                 Token lastToken = tokens.lastElement();
-                if (lastToken.getToken().equals("OPERATOR") && lastToken.getLine() == currentToken.getLine()
+                if (lastToken.getToken().equals(OPERATOR) && lastToken.getLineNumber() == currentToken.getLineNumber()
                         && lastToken.getWord().length() < 2) {
                     lastToken.setWord(lastToken.getWord() + currentToken.getWord());
                     return;
@@ -100,32 +129,32 @@ public class Lexer {
         tokens.add(currentToken);
     }
 
-    private String checkTokenType(String word) {
-        if (word.equals(""))
-            return "";
+    private String getTokenType(String word) {
+        if (word.equals(EMPTY_STRING))
+            return EMPTY_STRING;
         if (isKeyWord(word))
-            return "KEYWORD";
+            return KEYWORD;
         if (isOperator(word))
-            return "OPERATOR";
+            return OPERATOR;
         if (isDelimiter(word))
-            return "DELIMITER";
+            return DELIMITER;
         if (isBinary(word))
-            return "BINARY";
+            return BINARY;
         if (isOctal(word))
-            return "OCTAL";
+            return OCTAL;
         if (isInteger(word))
-            return "INTEGER";
+            return INTEGER;
         if (isFloat(word))
-            return "FLOAT";
+            return FLOAT;
         if (isHexadecimal(word))
-            return "HEXADECIMAL";
+            return HEXADECIMAL;
         if (isString(word))
-            return "STRING";
+            return STRING;
         if (isCharacter(word))
-            return "CHARACTER";
+            return CHARACTER;
         if (isIdentifier(word))
-            return "IDENTIFIER";
-        return "ERROR";
+            return IDENTIFIER;
+        return ERROR;
     }
 
     private boolean isKeyWord(String word) {
@@ -182,14 +211,13 @@ public class Lexer {
         return tokens;
     }
 
-    private class Line{
-        String lineContent;
+    private class IndexedString {
+        String content;
         int lineNumber;
 
-        public Line(String lineContent, int lineNumber) {
-            this.lineContent = lineContent;
+        public IndexedString(String content, int lineNumber) {
+            this.content = content;
             this.lineNumber = lineNumber;
         }
     }
-
 }
