@@ -4,12 +4,12 @@ public class Token {
 
     private String word;
     private String token;
-    private int line;
+    private int lineNumber;
 
-    public Token(String word, String token, int line){
+    public Token(String word, String token, int lineNumber){
         this.word = word;
         this.token = token;
-        this.line = line;
+        this.lineNumber = lineNumber;
     }
 
     public String getWord(){
@@ -28,12 +28,12 @@ public class Token {
         this.token = token;
     }
 
-    public int getLine(){
-        return line;
+    public int getLineNumber(){
+        return lineNumber;
     }
 
-    public void setLine(int line){
-        this.line = line;
+    public void setLineNumber(int lineNumber){
+        this.lineNumber = lineNumber;
     }
 
 }
