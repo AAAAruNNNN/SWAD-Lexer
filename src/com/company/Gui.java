@@ -119,11 +119,13 @@ public class Gui extends JFrame {
 
     private void createConsole() {
         console = new JTextArea();
-        console.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.BLACK), CONSOLE_PANEL_TITLE));
         console.setLineWrap(true);
-        console.setBackground(Color.gray);
-        mainFrame.add(console);
+        JScrollPane consoleScrollPane = new JScrollPane(console);
+        consoleScrollPane.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.BLACK), CONSOLE_PANEL_TITLE));
+        console.setBackground(Color.black);
+        console.setForeground(Color.white);
+        mainFrame.add(consoleScrollPane);
     }
 
     private void writeConsole(Vector<Token> tokens) {
