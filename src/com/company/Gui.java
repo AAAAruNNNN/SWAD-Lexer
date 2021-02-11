@@ -24,7 +24,6 @@ public class Gui extends JFrame {
     private JTable tokensTable;
     private JTextArea console;
     private DefaultTableModel tableModel;
-
     private static final String FRAME_TITLE = "LEXICAL ANALYZER ";
     private static final int FRAME_DIMENSION = 500;
     private static final String FILE_MENU_LABEL = "File";
