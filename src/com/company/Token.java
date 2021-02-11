@@ -12,11 +12,6 @@ public class Token {
         this.line = line;
     }
 
-    public Token(String word, String token){
-        this.word = word;
-        this.token = token;
-    }
-
     public String getWord(){
         return word;
     }

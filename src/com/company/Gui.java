@@ -24,14 +24,31 @@ public class Gui extends JFrame {
     private JTextArea console;
     private DefaultTableModel tableModel;
 
+    private static final String FRAMETITLE = "LEXICAL ANALYZER ";
+    private static final int FRAMEWIDTH = 500;
+    private static final int FRAMEHEIGHT = 500;
+    private static final String FILEMENULABEL = "File";
+    private static final String RUNMENULABEL = "Run";
+    private static final String[] columnNames = { "Line", "Token", "String or word" };
+
     public Gui() {
         createGui();
     }
 
+    private void createGui() {
+        mainFrame = new JFrame(FRAMETITLE);
+        mainFrame.setSize(FRAMEWIDTH, FRAMEHEIGHT);
+        createMenu();
+        createMiddlePanel();
+        createConsole();
+        mainFrame.setLayout(new GridLayout(2, 1)); // 2 rows 1 column
+        mainFrame.setVisible(true);
+    }
+
     private void createMenu() {
         JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
-        Action runAction = new AbstractAction("Run") {
+        JMenu fileMenu = new JMenu(FILEMENULABEL);
+        Action runAction = new AbstractAction(RUNMENULABEL) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String s = editor.getText();
@@ -50,15 +67,7 @@ public class Gui extends JFrame {
         mainFrame.setJMenuBar(menuBar);
     }
 
-    private void createGui() {
-        mainFrame = new JFrame("LEXER");
-        mainFrame.setSize(500, 500);
-        createMenu();
-        createMiddlePanel();
-        createConsole();
-        mainFrame.setLayout(new GridLayout(2, 1)); // 2 rows 1 column
-        mainFrame.setVisible(true);
-    }
+
 
 
     private void createMiddlePanel() {
@@ -81,7 +90,6 @@ public class Gui extends JFrame {
     }
 
     private void createTokensTable() {
-        String[] columnNames = { "Line", "Token", "String or word" };
         tableModel = new DefaultTableModel(columnNames, 0);
         tokensTable = new JTable(tableModel);
     }

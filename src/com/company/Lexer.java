@@ -21,8 +21,7 @@ public class Lexer {
     private static final String STRING_PATTERN = "\"[0-9a-zA-Z]+\"";
     private static final String CHARACTER_PATTERN = "\'.\'";
     private static final String IDENTIFIER_PATTERN = "[a-zA-Z][_a-zA-Z0-9]*";// "(?:)?[_][a-zA-Z]+";
-
-    private static final String[] DELIMITERS = { "(", ")", "{", "}", ";", "," };
+    private static final String[] DELIMITERS = { "(", ")", "{", "}", ";", ",", "." };
     private static final String[] KEYWORDS = { "abstract", "assert", "boolean", "break", "byte", "case", "catch",
             "char", "class", "const", "continue", "default", "do", "double", "else", "enum", "extends", "final",
             "finally", "float", "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long",
@@ -31,7 +30,6 @@ public class Lexer {
             "while" };
     private static final String[] OPERATORS = { "+", "-", "", "/", "%", "++", "--", "=", "+=", "-=", "=", "/=", "%=",
             "&=", "|=", "^=", ">>=", "<<=", "==", "!=", ">", "<", ">=", "<=", "&&", "||", "!", "&", "|" };
-
     private Vector<Token> tokens;
     private String inputText;
 
